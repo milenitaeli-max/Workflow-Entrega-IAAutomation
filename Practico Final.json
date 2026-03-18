@@ -1,0 +1,637 @@
+{
+  "name": "Practico Final",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "maxTokensToSample": 4096,
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        496
+      ],
+      "id": "1c41f3ea-ccbf-4318-829a-c134d0bcdcd9",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "P0exi9Khj99XkQbx",
+          "name": "Groq account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4ec93705-247c-4680-b77a-1343538c24c9",
+              "leftValue": "={{ $json['resultado '].status }}",
+              "rightValue": "RELEVANTE",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2288,
+        368
+      ],
+      "id": "9388354f-98e2-49e7-9e5d-ebac6b16daf2",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "037dc18f-439a-46aa-8f0b-41b6017dfa5f",
+              "name": "=resultado ",
+              "value": "={{ JSON.parse($json.text) }}",
+              "type": "object"
+            },
+            {
+              "id": "a3b9d2d9-43c8-433d-9203-06922e73280c",
+              "name": "Oferta ",
+              "value": "=job_title: {{ $item(0).$node[\"Datos para análisis\"].json.job_title }}\ncompany: {{ $item(0).$node[\"Datos para análisis\"].json.company }}\njob_link: {{ $item(0).$node[\"Datos para análisis\"].json.job_link }}\nresultado: {{ JSON.parse($json.text) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1952,
+        368
+      ],
+      "id": "43b3791a-4217-4360-80e4-41f497bf4909",
+      "name": "Datos Limpios"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        2528,
+        528
+      ],
+      "id": "7f01b048-c3b3-4048-9649-286ca1006786",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "P0exi9Khj99XkQbx",
+          "name": "Groq account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        352
+      ],
+      "id": "b356adf2-2ab2-417c-82f5-318003d3f131",
+      "name": "Trigger - Ejecutar cada X minutos"
+    },
+    {
+      "parameters": {
+        "url": "https://remoteok.com/remote-design-jobs.rss",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0"
+            }
+          ]
+        },
+        "options": {
+          "lowercaseHeaders": false
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        352
+      ],
+      "id": "07bb923e-7cec-4f52-ad97-a1a95d1b3561",
+      "name": "Obtener ofertas"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9f8a2e77-f284-4378-8f45-a72df742f1df",
+              "name": "job_title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "075ac879-fab3-4a14-a289-fc98d698b7d7",
+              "name": "company",
+              "value": "={{ $json.company }}",
+              "type": "string"
+            },
+            {
+              "id": "243b9d1b-db57-4542-a396-b213b21204ed",
+              "name": "job_description",
+              "value": "={{ $json.description }}",
+              "type": "string"
+            },
+            {
+              "id": "35164ecd-d8a1-444c-bd6c-27353a627fa4",
+              "name": "job_link",
+              "value": "={{ $json.link }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        784,
+        352
+      ],
+      "id": "8cfcb2a5-95dc-4b71-a950-2ba63766368d",
+      "name": "Normalizar datos"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "rss.channel.item",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        608,
+        352
+      ],
+      "id": "ea962196-1d29-4a0d-bd8e-e936ef2d12a2",
+      "name": "Separar ofertas"
+    },
+    {
+      "parameters": {
+        "dataPropertyName": "=data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        416,
+        352
+      ],
+      "id": "78d1a892-313a-4592-bff5-211eca440788",
+      "name": "XML a JSON"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2e8598dc-2ffb-4a6e-aa31-5c69d3a39033",
+              "name": "job_description_short",
+              "value": "={{ $json.job_description.slice(0,500) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "except",
+        "excludeFields": "job_description",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        992,
+        352
+      ],
+      "id": "3203e2e1-247b-41a6-84b7-f747c2487299",
+      "name": "Datos para análisis"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4a304e4f-f0fa-4105-a4e7-fb5949e727ab",
+              "name": "guardar datos ",
+              "value": "=job_title: {{ $json.job_title }}\ncompany: {{ $json.company }}\njob_description_short: {{ $json.job_description_short }}\njob_link: {{ $json.job_link }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1200,
+        352
+      ],
+      "id": "1539a53c-3dd1-4fd9-b49d-2c4135cfa067",
+      "name": "Guardado de datos "
+    },
+    {
+      "parameters": {
+        "batchSize": "={{ 1 }}",
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1440,
+        352
+      ],
+      "id": "7db6f40f-f6e5-4207-9d2f-5b54840ec136",
+      "name": "Evitar rate limit"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analiza esta oferta laboral.\n\nTítulo:\n{{ $json.job_title }}\n\nEmpresa:\n{{ $json.company }}\n\nDescripción:\n{{ $json.job_description_short }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Eres un sistema que clasifica ofertas de empleo.  Debes determinar si la oferta corresponde a alguno de estos roles:  - Graphic Designer - UX Designer - UI Designer - UX/UI Designer - Product Designer  Devuelve SOLO JSON válido con este formato:  {  \"status\": \"RELEVANTE\" o \"NO_RELEVANTE\",  \"reason\": \"explicación breve\" }  No agregues texto fuera del JSON."
+            }
+          ]
+        },
+        "batching": {
+          "batchSize": 1,
+          "delayBetweenBatches": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1648,
+        368
+      ],
+      "id": "a4e5b174-b538-42bd-ba44-1c6bdf184918",
+      "name": "Groq clasificador",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2128,
+        368
+      ],
+      "id": "4748c700-be3e-4de5-9143-029159bbf24d",
+      "name": "Evitar rate limit1",
+      "webhookId": "2377bbec-7c66-4a60-93a7-9fc6469d61f3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analiza esta oferta laboral relevante.\n\nTítulo:\n{{ $item(0).$node[\"Datos para análisis\"].json.job_title }}\n\nEmpresa:\n{{ $item(0).$node[\"Datos para análisis\"].json.company }}\n\nDescripción:\n{{ $item(0).$node[\"Datos para análisis\"].json.job_description_short }}\n\nDevuelve SOLO un JSON válido con este formato:\n\n{\n \"summary\": \"...\",\n \"reasons\": [\"...\", \"...\"]\n}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Eres un asistente que resume ofertas laborales relevantes para diseñadores.  Tu tarea es generar un resumen claro de la oferta y explicar por qué es relevante.  Devuelve SOLO JSON válido con este formato:  {  \"summary\": \"resumen corto de la oferta\",  \"reasons\": [\"motivo 1\", \"motivo 2\"] }  No agregues texto fuera del JSON."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        2464,
+        352
+      ],
+      "id": "0bc139cf-461e-41ae-8429-326eab679837",
+      "name": "LLM - Generar resumen"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "037dc18f-439a-46aa-8f0b-41b6017dfa5f",
+              "name": "=resumen",
+              "value": "={{ JSON.parse($json.text).summary }}",
+              "type": "string"
+            },
+            {
+              "id": "7e65929d-5bbc-4317-b286-7d585f14cabc",
+              "name": "job_title",
+              "value": "={{ $item(0).$node[\"Datos para análisis\"].json.job_title }}",
+              "type": "string"
+            },
+            {
+              "id": "8a5511c4-9d64-4b2b-8809-dae58e3fe488",
+              "name": "company",
+              "value": "={{ $item(0).$node[\"Datos para análisis\"].json.company}}",
+              "type": "string"
+            },
+            {
+              "id": "aeaa9ee2-c541-4707-adc3-c3f7c98e2865",
+              "name": "job_link",
+              "value": "={{ $item(0).$node[\"Datos para análisis\"].json.job_link }}",
+              "type": "string"
+            },
+            {
+              "id": "5d4e2711-2754-42f7-930c-7c7861c4e304",
+              "name": "job_description_short",
+              "value": "={{ $item(0).$node[\"Datos para análisis\"].json.job_description_short }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2736,
+        352
+      ],
+      "id": "69e374df-fb15-45f6-8d47-3af9463d5299",
+      "name": "Consolidar datos finales"
+    },
+    {
+      "parameters": {
+        "sendTo": "milenita.eli@gmail.com",
+        "subject": "Nueva oferta relevante de diseño detectada",
+        "message": "=Título: {{ $json.job_title }}\n\nEmpresa: {{ $json.company }}\n\nResumen:\n{{ $json.resumen }}\n\nLink:\n{{ $json.job_link }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2944,
+        352
+      ],
+      "id": "2ea38ad3-1db6-46fc-bced-8f6596770594",
+      "name": "Enviar oferta por email",
+      "webhookId": "95c8e1f7-9db3-449c-91cc-1e04d558d1c9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "9WvL1nOePtjb0G8p",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Groq clasificador",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Datos Limpios": {
+      "main": [
+        [
+          {
+            "node": "Evitar rate limit1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "LLM - Generar resumen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Evitar rate limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LLM - Generar resumen",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger - Ejecutar cada X minutos": {
+      "main": [
+        [
+          {
+            "node": "Obtener ofertas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener ofertas": {
+      "main": [
+        [
+          {
+            "node": "XML a JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar datos": {
+      "main": [
+        [
+          {
+            "node": "Datos para análisis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Separar ofertas": {
+      "main": [
+        [
+          {
+            "node": "Normalizar datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML a JSON": {
+      "main": [
+        [
+          {
+            "node": "Separar ofertas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Datos para análisis": {
+      "main": [
+        [
+          {
+            "node": "Guardado de datos ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardado de datos ": {
+      "main": [
+        [
+          {
+            "node": "Evitar rate limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evitar rate limit": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Groq clasificador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq clasificador": {
+      "main": [
+        [
+          {
+            "node": "Datos Limpios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evitar rate limit1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM - Generar resumen": {
+      "main": [
+        [
+          {
+            "node": "Consolidar datos finales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consolidar datos finales": {
+      "main": [
+        [
+          {
+            "node": "Enviar oferta por email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar oferta por email": {
+      "main": [
+        [
+          {
+            "node": "Evitar rate limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a7a5b9e8-3254-44f6-bba7-8f0e7792c73e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a20a13a433983178973637a1f3f50d519bf9c96b4a340afc60055e6edd9f013f"
+  },
+  "id": "L8hdoNqGgLrK0d1n",
+  "tags": []
+}
