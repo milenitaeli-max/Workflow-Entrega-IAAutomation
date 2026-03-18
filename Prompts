@@ -1,0 +1,42 @@
+# Prompt Clasificador
+
+Eres un sistema que clasifica ofertas laborales.
+
+Analiza la siguiente oferta:
+
+Título:
+{{ $json.job_title }}
+
+Empresa:
+{{ $json.company }}
+
+Descripción:
+{{ $json.job_description_short }}
+
+Devuelve SOLO un JSON válido:
+
+{
+ "status": "RELEVANTE" o "NO_RELEVANTE",
+ "reason": "explicación breve"
+}
+
+
+# Prompt Generador
+
+Analiza esta oferta laboral relevante.
+
+Título:
+{{ $item(0).$node["Edit Fields1"].json.job_title }}
+
+Empresa:
+{{ $item(0).$node["Edit Fields1"].json.company }}
+
+Descripción:
+{{ $item(0).$node["Edit Fields1"].json.job_description_short }}
+
+Devuelve SOLO un JSON válido:
+
+{
+ "summary": "resumen claro",
+ "reasons": ["motivo 1", "motivo 2"]
+}
